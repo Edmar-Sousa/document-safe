@@ -13,6 +13,10 @@ interface IDocNft721 {
     function getTokenCid(uint256 _tokenId) external view returns (string memory);
 }
 
+interface IDocStaking {
+    function notifyReward(uint256 _tokens) external;
+    function totalStaking() external view returns (uint256);
+}
 
 /**
  * @dev Contrato utilizado para tratar arquivos. Esse contrato tem as funções
@@ -51,8 +55,13 @@ contract DocRegisterDocument is ReentrancyGuard {
     /**
      * @dev Taxa de token para registrar um documento.
      */
-    uint256 taxTokens = 5e18;
+    uint256 taxTokens = 10e18;
 
+    /**
+     * @dev Interface do contrato de staking para que ele possa receber os tokens
+     * e em seguida dividir para os usuarios.
+     */
+    IDocStaking stakingContract;
 
     /**
      * @dev Evento emitido quando o documento é registrado na blockchain.
@@ -60,7 +69,8 @@ contract DocRegisterDocument is ReentrancyGuard {
     event DocumentRegistred(address indexed user, uint256 tokenId);
 
 
-    constructor(address _tokenNft, address _token) {
+    constructor(address _tokenNft, address _token, address _staking) {
+        stakingContract = IDocStaking(_staking);
         tokenNft = IDocNft721(_tokenNft);
         token = IERC20(_token);
     }
@@ -89,6 +99,63 @@ contract DocRegisterDocument is ReentrancyGuard {
     }
 
     /**
+     * @dev Essa função pega toda a taxa para a plataforma
+     */
+    function claimTaxToPlatform() private {
+        /**
+         * @dev Transferindo a parte da plataforma.
+         */
+        bool sucess = token.transferFrom(msg.sender, address(this), taxTokens);
+        require(sucess, "Error when making transfer.");
+    }
+
+
+    /**
+     * @dev Função para pegar a taxa do usuario para registrar um documento e distribuir
+     * entre a plataforma e o contrato de staking.
+     */
+    function claimTaxToRegister() internal {
+        uint256 totalInStake = stakingContract.totalStaking();
+
+        /**
+         * @dev Se não tem tokens em stake, a taxa sera toda transferida para a plataforma.
+         */
+        if (totalInStake == 0) {
+            claimTaxToPlatform();
+            return;
+        }
+
+
+        /**
+         * @dev A plataforma pega 1% da taxa
+         */
+        uint256 platformFee = taxTokens / 100;
+
+        /*
+         * @dev O restante vai ser distribuido para quem tem tokens em staking.
+         */
+
+        uint256 reward = taxTokens - platformFee;
+
+
+        /**
+         * @dev Transferindo a parte da plataforma.
+         */
+        bool sucess = token.transferFrom(msg.sender, address(this), platformFee);
+        require(sucess, "Error when making transfer.");
+
+        
+
+        /**
+         * @dev Transferindo tokens para o contrato de staking.
+         */
+        sucess = token.transferFrom(msg.sender, address(stakingContract), reward);
+        require(sucess, "Error when making transfer.");
+
+        stakingContract.notifyReward(reward);
+    }
+
+    /**
      * @dev Funçao para registrat um documento. Essa função vai, receber a taxa, em token, 
      * do usuario que ira registrar um documento. Essa taxa deverar ser distribuida entre 
      * os usuario que mativerem tokens em staking. Em seguida a função vai armazenar o 
@@ -110,11 +177,7 @@ contract DocRegisterDocument is ReentrancyGuard {
         require(signer == msg.sender, "Signer invalid.");
 
 
-        /**
-         * @dev Esse contrato ira receber os tokens
-         */
-        bool sucess = token.transferFrom(msg.sender, address(this), taxTokens);
-        require(sucess, "Error when making transfer.");
+        claimTaxToRegister();
 
         /**
          * @dev Fazendo o mint do token NFT

@@ -21,15 +21,25 @@ describe('Test Doc Register', async () => {
         const nftAddress = await nft.getAddress();
         const tokenAddress = await token.getAddress();
 
+        /** Staking */
+        const Staking = await ethers.getContractFactory('DocStaking');
+        const staking = await Staking.deploy(tokenAddress);
+        await staking.waitForDeployment();
+
+        const stakingAddress = await staking.getAddress();
+
         /** Register */
         const DocRegister = await ethers.getContractFactory('DocRegisterDocument')
-        const docRegister = await DocRegister.deploy(nftAddress, tokenAddress);
+        const docRegister = await DocRegister.deploy(nftAddress, tokenAddress, stakingAddress);
         await docRegister.waitForDeployment();
 
         const registerAddress = await docRegister.getAddress();
         nft.transferOwnership(registerAddress);
 
-        return { owner, token, nft, docRegister }
+        /** Set address doc register */
+        await staking.setAddressRegisterDocument(registerAddress);
+
+        return { owner, token, nft, docRegister, staking }
     }
 
 
@@ -46,10 +56,15 @@ describe('Test Doc Register', async () => {
     });
 
     it('Test sufficient tokens to complete the operation', async () => {
-        const { owner, nft, token, docRegister } = await deployDocuments();
+        const { owner, nft, token, staking, docRegister } = await deployDocuments();
+
+        // const stakingTokens = 1n * 10n ** 18n;
+
+        // await token.approve(await staking.getAddress(), stakingTokens);
+        // await staking.stake(stakingTokens);
 
         const registerAddress = await docRegister.getAddress();
-        const tokensApproved = 5n * 10n ** 18n;
+        const tokensApproved = 10n * 10n ** 18n;
 
         const hash = ethers.keccak256(ethers.toUtf8Bytes('file'))
         const cid = 'ifps://1234567';
