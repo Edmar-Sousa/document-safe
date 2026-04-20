@@ -27,7 +27,7 @@ interface IDocStaking {
  * Para registrar um documento, precisa informar o Hash do arquivo e a assinatura do 
  * do hash com o identificador da carteira do usuario.
  */
-contract DocRegisterDocument is ReentrancyGuard {
+contract DocRegisterDocument is ReentrancyGuard, Ownable {
 
     /**
      * @dev Estrutura para armazenar quem assinou e assinatura.
@@ -68,8 +68,13 @@ contract DocRegisterDocument is ReentrancyGuard {
      */
     event DocumentRegistred(address indexed user, uint256 tokenId);
 
+    /**
+     * @dev Evento emitido quando o proprietario da plataforma pega o reward.
+     */
+     event RewardPlatformClaim(address indexed user, uint256 tokens);
 
-    constructor(address _tokenNft, address _token, address _staking) {
+
+    constructor(address _tokenNft, address _token, address _staking) Ownable(msg.sender) {
         stakingContract = IDocStaking(_staking);
         tokenNft = IDocNft721(_tokenNft);
         token = IERC20(_token);
@@ -96,6 +101,21 @@ contract DocRegisterDocument is ReentrancyGuard {
 
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_sig);
         return ecrecover(ethSignedMessageHash, v, r, s);
+    }
+
+
+    /**
+     * @dev Função para pegar os tokens que a plataforma coleta.
+     * Essa função pode ser chamada apenas pelo proprietario.
+     */
+    function claimRewardOfPlatform() external onlyOwner nonReentrant {
+        uint256 balance = token.balanceOf(address(this));
+        require(balance > 0, "No tokens to claim.");
+
+        bool sucess = token.transfer(owner(), balance);
+        require(sucess, "Error when making transfer.");
+
+        emit RewardPlatformClaim(owner(), balance);
     }
 
     /**
