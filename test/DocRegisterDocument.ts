@@ -58,11 +58,6 @@ describe('Test Doc Register', async () => {
     it('Test sufficient tokens to complete the operation', async () => {
         const { owner, nft, token, staking, docRegister } = await deployDocuments();
 
-        // const stakingTokens = 1n * 10n ** 18n;
-
-        // await token.approve(await staking.getAddress(), stakingTokens);
-        // await staking.stake(stakingTokens);
-
         const registerAddress = await docRegister.getAddress();
         const tokensApproved = 10n * 10n ** 18n;
 
@@ -81,5 +76,49 @@ describe('Test Doc Register', async () => {
         await expect(
             docRegister.registerDocument(hash, cid, signer)
         ).to.emit(docRegister, 'DocumentRegistred').withArgs(owner.address, hash);
+    });
+
+    it('Test reward when have tokens in stake', async () => {
+        const { owner, token, staking, docRegister } = await deployDocuments();
+
+        const [, otherWallet] = await ethers.getSigners();
+
+        const tokensApproved = 10n * 10n ** 18n; // Quantidade de tokens para registrar um documento
+        const tokensToTransfer = 40n * 10n ** 18n;
+
+        const stakingAddress = await staking.getAddress();
+
+        // Stake
+        await token.transfer(otherWallet.address, tokensToTransfer);
+        await token.connect(otherWallet).approve(stakingAddress, tokensApproved);
+        await staking.connect(otherWallet).stake(tokensApproved);
+
+        const stakingValue = await staking.connect(otherWallet).getStaking();
+        expect(stakingValue).to.equal(tokensApproved);
+
+
+        // Registrando o documento
+        const registerAddress = await docRegister.getAddress();
+
+        const hash = ethers.keccak256(ethers.toUtf8Bytes('file'))
+        const cid = 'ifps://1234567';
+
+        const message = ethers.solidityPackedKeccak256(
+            ["bytes32", "address", "address"],
+            [hash, owner.address, registerAddress]
+        )
+        
+        const signer = await owner.signMessage(ethers.getBytes(message));
+        await token.approve(registerAddress, tokensApproved);
+        
+        await expect(docRegister.registerDocument(hash, cid, signer))
+            .to
+            .emit(docRegister, 'DocumentRegistred')
+            .withArgs(owner.address, hash);
+
+        const reward = 98n * 10n ** 17n;
+        const rewardGain = await staking.connect(otherWallet).getReward();
+
+        expect(rewardGain).to.be.equals(reward);
     });
 });

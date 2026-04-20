@@ -148,9 +148,9 @@ contract DocRegisterDocument is ReentrancyGuard, Ownable {
 
 
         /**
-         * @dev A plataforma pega 1% da taxa
+         * @dev A plataforma pega 2% da taxa          
          */
-        uint256 platformFee = taxTokens / 100;
+        uint256 platformFee = taxTokens * 2 / 100;
 
         /*
          * @dev O restante vai ser distribuido para quem tem tokens em staking.

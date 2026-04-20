@@ -76,6 +76,20 @@ contract DocStaking is Ownable, ReentrancyGuard {
     }
 
     /**
+     * @dev Retorna a quantidade de staking para um usuario.
+     */
+    function getStaking() public view returns (uint256) {
+        return stakingValue[msg.sender];
+    }
+
+    /**
+     * @dev Função para pegar quanto de recompensa foi acumulado.
+     */
+    function getReward() public view returns (uint256) {
+        return reward[msg.sender] + ((stakingValue[msg.sender] * (rewardPerTokenStoraged - userRewardPerTokenPaid[msg.sender])) / 1e18);
+    }
+
+    /**
      * @dev Função que apenas o proprietario do contrato deve chamar para configurar
      * o endereço do contrato de registro de documentos.
      */

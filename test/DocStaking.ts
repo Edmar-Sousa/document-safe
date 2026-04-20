@@ -23,14 +23,6 @@ describe('Tests Doc Staking', async () => {
         return { owner, user, token, staking };
     }
 
-    // it('Test staking does not have tokens', async () => {
-    //     const { owner, staking, token } = await deployContracts();
-    //     const tokensToStake = 1n * 10n ** 18n; // 1 token com 18 casas decimais
-
-    //     const tx = staking.stake(tokensToStake);
-    //     expect(tx).to.be.revertedWithCustomError(token, 'ERC20InsufficientAllowance')
-    // });
-
     it('Test staking tokens', async () => {
         const { owner, staking, token } = await deployContracts();
 
