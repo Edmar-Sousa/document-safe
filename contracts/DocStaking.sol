@@ -48,24 +48,6 @@ contract DocStaking is Ownable, ReentrancyGuard {
 
 
     /**
-     * @dev Função para ver quanto de staking o usuario tem.
-     */
-    function getTokensStaking() public view returns (uint256) {
-        return stakingValue[msg.sender];
-    }
-
-
-    /**
-     * @dev Função para calcular a porcentagem de tokens em staking
-     * de um usuario.
-     */
-    function getGainPorcentage() public view returns (uint256) {
-        uint256 tokensInStake = getTokensStaking();
-        return 100 * tokensInStake / totalStaking;
-    }
-
-
-    /**
      * @dev Função utilizada para fazer staking.
      */
     function stake(uint256 _tokens) public nonReentrant {

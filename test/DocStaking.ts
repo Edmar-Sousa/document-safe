@@ -96,29 +96,9 @@ describe('Tests Doc Staking', async () => {
         expect(tokensContract).to.be.equals(tokensToStake);
 
         await staking.unstake(tokensToStake);
-        const stakingTokens = await staking.getTokensStaking();
+        const tokensContractAfterUnstake = await token.balanceOf(stakingAddress);
         
-        expect(stakingTokens).to.be.equals(0);
-    });
-
-    it('Test stake percentage', async () => {
-        const { owner, staking, token } = await deployContracts();
-
-        const tokensToStake = 1n * 10n ** 18n; // 1 token com 18 casas decimais
-        const stakingAddress = await staking.getAddress();
-
-        await token.approve(stakingAddress, tokensToStake);
-        await staking.stake(tokensToStake);
-
-        const [totalStaking, stakingValue, stakingPercentage] =  await Promise.all([
-            staking.totalStaking(),
-            staking.getTokensStaking(),
-            staking.getGainPorcentage()
-        ]);
-
-        const percentage = 100n * stakingValue / totalStaking
-
-        expect(stakingPercentage).to.be.equals(percentage);
+        expect(tokensContractAfterUnstake).to.be.equals(0);
     });
 
 });
