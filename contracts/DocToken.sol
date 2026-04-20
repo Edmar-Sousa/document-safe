@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
 /**
- * @dev Token usados para pagar o envio de documentos, fazer staking e votar no DAO.
+ * @dev Token usados para pagar o envio de documentos e fazer staking.
  */
 contract DocToken is ERC20 {
 
