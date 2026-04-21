@@ -13,17 +13,26 @@ describe('Test Doc Register', async () => {
         const nft = await DocNft.deploy(owner);
         await nft.waitForDeployment();
 
+        /** vote tokens */
+        const VoteToken = await ethers.getContractFactory('DocVoteToken')
+        const voteToken = await VoteToken.deploy(owner.address);
+        await voteToken.waitForDeployment();
+
         /** Token */
         const Token = await ethers.getContractFactory('DocToken');
         const token = await Token.deploy();
         await token.waitForDeployment();
 
-        const nftAddress = await nft.getAddress();
-        const tokenAddress = await token.getAddress();
+        const [nftAddress, tokenAddress, voteTokenAddress] = await Promise.all([
+            nft.getAddress(),
+            token.getAddress(),
+            voteToken.getAddress()
+        ]);
+
 
         /** Staking */
         const Staking = await ethers.getContractFactory('DocStaking');
-        const staking = await Staking.deploy(tokenAddress);
+        const staking = await Staking.deploy(tokenAddress, voteTokenAddress);
         await staking.waitForDeployment();
 
         const stakingAddress = await staking.getAddress();
@@ -38,6 +47,7 @@ describe('Test Doc Register', async () => {
 
         /** Set address doc register */
         await staking.setAddressRegisterDocument(registerAddress);
+        await voteToken.transferOwnership(stakingAddress);
 
         return { owner, token, nft, docRegister, staking }
     }

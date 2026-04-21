@@ -5,6 +5,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+interface IVoteToken {
+    function mint(address _to, uint256 _tokens) external;
+    function burn(address _from, uint256 _tokens) external;
+}
+
 
 /**
  * @dev Esse contrato é utilizado para fazer staking dos tokens.
@@ -44,6 +49,10 @@ contract DocStaking is Ownable, ReentrancyGuard {
      */
     IERC20 token;
 
+    /**
+     * @dev Interface para os token de votação
+     */
+    IVoteToken voteTokens;
 
     /**
      * @dev Endereço do contrato de registro de documento.
@@ -66,8 +75,9 @@ contract DocStaking is Ownable, ReentrancyGuard {
     event UnstakingTokens(address indexed user, uint256 value);
 
 
-    constructor(address _token) Ownable(msg.sender) {
+    constructor(address _token, address _voteToken) Ownable(msg.sender) {
         token = IERC20(_token);
+        voteTokens = IVoteToken(_voteToken);
     }
 
     modifier calledByRegister() {
@@ -157,6 +167,15 @@ contract DocStaking is Ownable, ReentrancyGuard {
          * staking.
          */
         stakingValue[msg.sender] += _tokens;
+
+        /**
+         * @dev Dando tokens de votação para o usuario.
+         */
+        voteTokens.mint(msg.sender, _tokens);
+
+        /**
+         * @dev Atualizando o valor total de tokens em staking.
+         */
         totalStaking += _tokens;
 
         emit StakingTokens(msg.sender, _tokens);
@@ -180,7 +199,19 @@ contract DocStaking is Ownable, ReentrancyGuard {
         bool success = token.transfer(msg.sender, _tokens);
         require(success, "Error while transferring.");
 
+        /**
+         * @dev Debitando tokens do staking
+         */
         stakingValue[msg.sender] -= _tokens;
+
+        /**
+         * @dev Removendo tokens de votação.
+         */
+        voteTokens.burn(msg.sender, _tokens);
+
+        /**
+         * @dev Atualizando o valor total de tokens em staking.
+         */
         totalStaking -= _tokens;
 
         emit UnstakingTokens(msg.sender, _tokens);
