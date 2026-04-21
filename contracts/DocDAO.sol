@@ -5,9 +5,7 @@ pragma solidity ^0.8.0;
 import { IVotes } from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import { Governor } from "@openzeppelin/contracts/governance/Governor.sol";
 import { GovernorVotes } from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import { TimelockController } from "@openzeppelin/contracts/governance/TimelockController.sol";
 import { GovernorCountingSimple } from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import { GovernorTimelockControl } from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import { GovernorVotesQuorumFraction } from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 
 
@@ -19,19 +17,17 @@ contract DocDAO is
     Governor,
     GovernorCountingSimple,
     GovernorVotes,
-    GovernorVotesQuorumFraction,
-    GovernorTimelockControl
+    GovernorVotesQuorumFraction
 {
 
     /**
      * @dev No deploy é preciso passar o endereço do token de votação (vDOCT) e o 
      * timelock para controlar o tempo.
      */
-    constructor(IVotes _token, TimelockController _timelock) 
-        Governor("DocDAO") 
+    constructor(IVotes _token) 
+        Governor("DAO") 
         GovernorVotes(_token) 
-        GovernorVotesQuorumFraction(10) 
-        GovernorTimelockControl(_timelock) 
+        GovernorVotesQuorumFraction(10)
     {
     }
 
@@ -69,59 +65,15 @@ contract DocDAO is
     /**
      * @dev Retorna o estado da proposta (Pending, Active, Succeeded, Executed)
      */
-    function state(uint256 proposalId) public view override(Governor, GovernorTimelockControl) returns (ProposalState) {
+    function state(uint256 proposalId) public view override returns (ProposalState) {
         return super.state(proposalId);
     }
 
     /**
      * @dev Diz se a proposta precisa passar pelo time lock antes de executar.
      */
-    function proposalNeedsQueuing(uint256 proposalId) public view virtual override(Governor, GovernorTimelockControl) returns (bool) {
+    function proposalNeedsQueuing(uint256 proposalId) public view virtual override returns (bool) {
         return super.proposalNeedsQueuing(proposalId);
     }
 
-    /**
-     * @dev Função para agendar a execução da proposta.
-     */
-    function _queueOperations(
-        uint256 proposalId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint48) {
-        return super._queueOperations(proposalId, targets, values, calldatas, descriptionHash);
-    }
-
-    /**
-     * @dev Vai executar a proposta depois do delay.
-     */
-    function _executeOperations(
-        uint256 proposalId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) {
-        super._executeOperations(proposalId, targets, values, calldatas, descriptionHash);
-    }
-
-    /**
-     * @dev Função para cancelar a proposta.
-     */
-    function _cancel(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint256) {
-        return super._cancel(targets, values, calldatas, descriptionHash);
-    }
-
-    /**
-     * @dev Função para executar a proposta.
-     */
-    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address) {
-        return super._executor();
-    }
 }
