@@ -219,11 +219,11 @@ contract DocRegisterDocument is ReentrancyGuard, Ownable {
      * A função ira recuperar quem fez a assinatura do hash e verificar se é igual ao endereço
      * armazenado no mapping.
      */
-    function validateDocument(uint256 _hash, bytes memory _signature) external view returns (bool) {
+    function validateDocument(uint256 _hash) external view returns (bool) {
         uint256 tokenId = uint256(_hash);
 
         Document memory doc = documents[tokenId];
-        address recovered = recoverSigner(tokenId, _signature);
+        address recovered = recoverSigner(tokenId, doc.signature);
 
         return (recovered == doc.signer);
     }
