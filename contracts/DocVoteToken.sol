@@ -10,7 +10,9 @@ import { Nonces } from "@openzeppelin/contracts/utils/Nonces.sol";
 
 
 /**
- * @dev Token utilizado para realizar votações no DAO.
+ * @dev Token utilizado para realizar votações no DAO. O owner desse token
+ * deve ser o contrato de staking. Pois, apenas ele deve ter a permissão
+ * para chamar as funções de mint e burn.
  */
 contract DocVoteToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
 

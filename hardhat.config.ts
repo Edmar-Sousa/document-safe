@@ -7,6 +7,12 @@ export default defineConfig({
     profiles: {
       default: {
         version: "0.8.28",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
       },
       production: {
         version: "0.8.28",
@@ -20,6 +26,10 @@ export default defineConfig({
     },
   },
   networks: {
+    localhost: {
+      type: 'http',
+      url: "http://127.0.0.1:8545",
+    },
     hardhatMainnet: {
       type: "edr-simulated",
       chainType: "l1",
