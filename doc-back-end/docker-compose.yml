@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres
+    container_name: doc-database
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: doc-123
+      POSTGRES_DB: doc-database
+
+    ports:
+      - "5432:5432"
