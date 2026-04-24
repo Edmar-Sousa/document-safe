@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, ForeignKey, ManyToOne, PrimaryGenerat
 import { UserEntity } from "./user.entity";
 
 
-@Entity()
+@Entity('documents')
 export class DocumentEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -23,7 +23,6 @@ export class DocumentEntity {
     hash: string;
 
     @Column()
-    @ForeignKey(() => UserEntity)
     ownerId: number;
 
     @CreateDateColumn()

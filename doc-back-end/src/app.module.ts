@@ -25,7 +25,7 @@ import { DocumentModule } from './modules/document/document.module';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        synchronize: false,
+        synchronize: true,
       }),
 
     }),

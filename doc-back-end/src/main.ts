@@ -4,7 +4,10 @@ import { HandlerExceptions } from './filters/exceptions/handler.exceptions';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
   app.useGlobalFilters(new HandlerExceptions());
+  app.enableCors();
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

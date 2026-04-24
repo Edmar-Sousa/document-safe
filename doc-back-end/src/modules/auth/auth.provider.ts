@@ -31,9 +31,16 @@ export class AuthProvider {
                 password: md5(signUpDto.password),
             });
 
-            return await this.userRepository.save(user);
+            const data = await this.userRepository.save(user);
+
+            return {
+                message: 'Usuário criado com sucesso',
+                data,
+            };
         }
         catch (error) {
+            console.log(error);
+            
             throw new CreateUserException({
                 message: 'Erro ao criar usuário no banco de dados',
             });
@@ -47,6 +54,8 @@ export class AuthProvider {
                 email: signInDto.email
             },
         });
+
+        console.log('email', signInDto.email);
 
         if (!user) {
             throw new UserNotFoundException({
