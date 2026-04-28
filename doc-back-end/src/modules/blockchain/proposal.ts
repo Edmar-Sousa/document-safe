@@ -15,7 +15,7 @@ export class BlockchainProposalListener implements OnModuleInit {
 
     async onModuleInit() {
         const rpc = this.configService.get<string>('RPC_URL');
-        const address = this.configService.get<string>('CONTRACT_ADDRESS') as string;
+        const address = this.configService.get<string>('CONTRACT_DAO_ADDRESS') as string;
 
         const provider = new ethers.JsonRpcProvider(rpc);
         const contract = new Contract(address, ContractAbi.abi, provider);
