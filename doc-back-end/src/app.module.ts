@@ -8,6 +8,7 @@ import {
 
 import { AuthModule } from './modules/auth/auth.module';
 import { DocumentModule } from './modules/document/document.module';
+import { BlockchainModule } from './modules/blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DocumentModule } from './modules/document/document.module';
 
     AuthModule,
     DocumentModule,
+    BlockchainModule,
   ],
   controllers: [],
   providers: [],

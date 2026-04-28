@@ -1,11 +1,11 @@
 import { shallowRef } from "vue";
 
 
-export function useAsyncRequest<T>(fn: Promise<any>) {
+export function useAsyncRequest<T>(fn: () => Promise<T>) {
     const isLoadding = shallowRef(false);
     const isError = shallowRef(false);
 
-    const data = shallowRef<T | null>(null);
+    const data = shallowRef<T | null>();
     const error = shallowRef<Error | null>(null);
 
     const execute = async () => {
@@ -14,8 +14,8 @@ export function useAsyncRequest<T>(fn: Promise<any>) {
         error.value = null;
 
         try {
-            const response = await fn;
-            data.value = response.data;
+            const response = await fn();
+            data.value = response;
         } catch (err) {
             isError.value = true;
             error.value = err as Error;
@@ -24,13 +24,16 @@ export function useAsyncRequest<T>(fn: Promise<any>) {
         }
     }
 
+    
     execute();
+    
 
     return {
         isLoadding,
         isError,
         data,
-        error
+        error,
+        execute,
     }
 }
 

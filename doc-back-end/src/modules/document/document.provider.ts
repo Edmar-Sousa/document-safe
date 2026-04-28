@@ -42,8 +42,8 @@ export class DocumentProvider {
     async getDocumentsByOwnerId(ownerId: number, page: number, limit: number) {
         const doc = this.documentRepository
             .createQueryBuilder()
-            .where('ownerId = :ownerId', { ownerId })
-            .orderBy('createdAt', 'DESC');
+            .where('"ownerId" = :ownerId', { ownerId })
+            .orderBy('"createdAt"', 'DESC');
 
         return paginate(doc, page, limit);
     }

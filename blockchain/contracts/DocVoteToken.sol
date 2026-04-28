@@ -32,6 +32,9 @@ contract DocVoteToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
      */
     function mint(address _to, uint256 _tokens) external onlyOwner {
         _mint(_to, _tokens);
+
+        if (delegates(_to) == address(0))
+            _delegate(_to, _to);
     }
 
     /**

@@ -65,6 +65,11 @@ contract DocRegisterDocument is ReentrancyGuard, Ownable {
     IDocStaking stakingContract;
 
     /**
+     * @dev Endereço do DAO
+     */
+    address dao;
+
+    /**
      * @dev Evento emitido quando o documento é registrado na blockchain.
      */
     event DocumentRegistred(address indexed user, uint256 tokenId);
@@ -79,6 +84,28 @@ contract DocRegisterDocument is ReentrancyGuard, Ownable {
         stakingContract = IDocStaking(_staking);
         tokenNft = IDocNft721(_tokenNft);
         token = IERC20(_token);
+    }
+
+    modifier onlyDao {
+        require(msg.sender == dao, "Only DAO allowed call this method");
+        _;
+    }
+
+
+    /**
+     * @dev Função para setar o endereço do DAO
+     */
+    function setDaoAddress(address _dao) external onlyOwner {
+        dao = _dao;
+    }
+
+    /**
+     * @dev Função para definir a quantidade de tokens para 
+     * registrar um documento
+     */
+    function setTaxToken(uint256 _tokens) external onlyDao {
+        require(_tokens > 0, "The value must be greater than zero.");
+        taxTokens = _tokens * 1e18;
     }
 
 

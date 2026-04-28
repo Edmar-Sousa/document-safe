@@ -110,14 +110,11 @@ describe('Tests Doc Seller', async () => {
         expect(ownerContract).to.equals(ownerAddress);
 
         const sellerAddress = await seller.getAddress();
-        const approveToken = 200n * 10n ** 18n; // 200 * 1e18
+        const transferToken = 200n * 10n ** 18n; // 200 * 1e18
         const expectedDoct = 100n * 10n ** 18n;
 
-        await token.approve(sellerAddress, approveToken);
-        const allowance = await token.allowance(ownerAddress, sellerAddress);
-
-        expect(allowance).to.equals(approveToken);
-
+        await token.transfer(sellerAddress, transferToken);
+        
         const otherWallet = await createWallet(owner);        
         const tx = await seller.connect(otherWallet).buyTokensDoc({
             value: ethers.parseEther('1')
@@ -134,7 +131,7 @@ describe('Tests Doc Seller', async () => {
         const sellerAddress = await seller.getAddress();
 
         const approveToken = 100n * 10n ** 18n; // 100 * 1e18
-        await token.approve(sellerAddress, approveToken);
+        await token.transfer(sellerAddress, approveToken);
 
         expect(seller.connect(otherWallet).buyTokensDoc()).to.be.revertedWith('Error when buying tokens with this value.');
     });
@@ -146,7 +143,7 @@ describe('Tests Doc Seller', async () => {
         const sellerAddress = await seller.getAddress();
 
         const approveToken = 100n * 10n ** 18n; // 100 * 1e18
-        await token.approve(sellerAddress, approveToken);
+        await token.transfer(sellerAddress, approveToken);
 
         const tx = seller.connect(otherWallet).buyTokensDoc({
             value: ethers.parseEther('3')

@@ -50,6 +50,7 @@ async function deployOracle() {
     await chainLink.waitForDeployment();
 
     const chainLinkAddress = await chainLink.getAddress();
+    // const chainLinkAddress = '0x694AA1769357215DE4FAC081bf1f309aDC325306';
 
     const OracleContract = await ethers.getContractFactory('DocOracle');
     const oracle = await OracleContract.deploy(chainLinkAddress);
@@ -162,7 +163,7 @@ async function deployDao(voteTokenAddress: string) {
 }
 
 async function main() {
-    const [deployer, newOwner] = await ethers.getSigners();
+    const [deployer] = await ethers.getSigners();
 
     console.log(`Deploy contracts with address ${deployer.address}`);
     console.log(`Deploy on network: ${ethers.Network.name}`);
@@ -177,10 +178,10 @@ async function main() {
     } = await deployTokens(deployer);
 
     const { oracleAddress } = await deployOracle();
-    const { sellerAddress } = await deploySeller(tokenAddress, oracleAddress);
+    const { sellerAddress, seller } = await deploySeller(tokenAddress, oracleAddress);
 
     const { stakingAddress, staking } = await deployStaking(tokenAddress, voteTokenAddress);
-    const { registerDocAddress } = await deployRegister(tokenNftAddress, tokenAddress, stakingAddress);
+    const { registerDocAddress, registerDocument } = await deployRegister(tokenNftAddress, tokenAddress, stakingAddress);
     const { daoAddress } = await deployDao(voteTokenAddress);
     const { timeLockAddress } = await deployTimelock(
         300, // 5 min,
@@ -190,13 +191,29 @@ async function main() {
     );
 
     // Approve tokens to seller
-    const tokenApprove = 100000000n * 10n ** 18n;
-    token.approve(sellerAddress, tokenApprove);
+    const tokensTransfer = 100000000n * 10n ** 18n;
+    await token.transfer(sellerAddress, tokensTransfer);
 
     // Change ownerships
     await tokenNft.transferOwnership(registerDocAddress);
     await voteToken.transferOwnership(stakingAddress);
     await staking.setAddressRegisterDocument(registerDocAddress);
+
+    await seller.setDaoAddress(daoAddress);
+    await registerDocument.setDaoAddress(daoAddress);
+
+
+    console.log('Deployment completed successfully!');
+    console.log('Contracts addresses:');
+    console.log(`DocToken: ${tokenAddress}`);
+    console.log(`DocNFT: ${tokenNftAddress}`);
+    console.log(`DocVoteToken: ${voteTokenAddress}`);
+    console.log(`DocOracle: ${oracleAddress}`);
+    console.log(`DocSeller: ${sellerAddress}`);
+    console.log(`DocStaking: ${stakingAddress}`);
+    console.log(`DocRegisterDocument: ${registerDocAddress}`);
+    console.log(`DocDAO: ${daoAddress}`);
+    console.log(`DocTimeLock: ${timeLockAddress}`);
 }
 
 main()

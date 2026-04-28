@@ -89,7 +89,7 @@ async function handleSignIn() {
     authStore.setAccessToken(response.data.accessToken);
     setItem('accessToken', response.data.accessToken);
 
-    router.push({ name: 'Dashboard' });
+    router.push({ name: 'ConnectWallet' });
 }
 
 </script>

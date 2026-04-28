@@ -14,6 +14,8 @@ export class HandlerExceptions implements ExceptionFilter {
         let message = 'Internal Server Error';
         let errors = {};
 
+        console.log(exception)
+
         if (exception instanceof CustomException) {
             id = exception.getId();
             status = exception.getStatusCode();

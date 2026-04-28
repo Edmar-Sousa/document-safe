@@ -12,8 +12,8 @@
             :class="{ 'ring-2 ring-blue-300': isFocused }">
                 <div 
                     :class="{ 
-                        'text-black-900': value.length || isFocused, 
-                        'text-gray-100': !value.length && !isFocused 
+                        'text-black-900': value || isFocused, 
+                        'text-gray-100': !value && !isFocused 
                     }">
                     <slot name="icon"></slot>
                 </div>
@@ -72,7 +72,7 @@ defineOptions({
 const attr = useAttrs();
 
 const isFocused = shallowRef(false);
-const value = defineModel<string>({ default: '' });
+const value = defineModel<string | number>();
 
 
 function handleFocus(value: boolean) {

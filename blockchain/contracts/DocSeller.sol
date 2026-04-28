@@ -22,12 +22,17 @@ contract DocSeller is Ownable, ReentrancyGuard {
      * @dev Valor do tokens DOCT por USD. Valor poderar ser alterado
      * pelo o DAO.
      */
-    uint256 public constant TOKENS_PER_USD = 100;
+    uint256 public tokensPerUsd = 100;
 
     /**
      * @dev Interface do contrato do oraculo
      */
     InterfaceOracle oracle;
+
+    /**
+     * @dev Endereço do DAO.
+     */
+    address dao;
 
     /**
      * @dev Interface do contrato do token ERC20
@@ -41,6 +46,23 @@ contract DocSeller is Ownable, ReentrancyGuard {
     constructor(address _oracle, address _token) Ownable(msg.sender) {
         oracle = InterfaceOracle(_oracle);
         token = IERC20(_token);
+    }
+
+    modifier onlyDao() {
+        require(msg.sender == dao, "Only DAO allowed call this method");
+        _;
+    }
+
+    /**
+     * @dev Função para setar o endereço do DAO
+     */
+    function setDaoAddress(address _dao) external onlyOwner {
+        dao = _dao;
+    }
+
+    function setTokensPerUsd(uint32 _tokensPerUsd) external onlyDao {
+        require(_tokensPerUsd > 0, "The value must be greater than zero.");
+        tokensPerUsd = _tokensPerUsd;
     }
 
     /**
@@ -57,7 +79,7 @@ contract DocSeller is Ownable, ReentrancyGuard {
      */
     function getNumberTokens(uint256 _value) internal view returns (uint256)  {
         uint256 usdValue = getUsdValue(_value);
-        return (usdValue * TOKENS_PER_USD * 1e18) / 1e8;
+        return (usdValue * tokensPerUsd * 1e18) / 1e8;
     }
 
     /**
@@ -72,10 +94,10 @@ contract DocSeller is Ownable, ReentrancyGuard {
         /**
          * Verificando se o contrato pode transferir token DOCT
          */
-        uint256 balance = token.allowance(owner(), address(this));
+        uint256 balance = token.balanceOf(address(this));
         require(balance >= tokens, "Insufficient Harvest Balance to make the purchase");
 
-        bool hasError = token.transferFrom(owner(), msg.sender, tokens);
+        bool hasError = token.transfer(msg.sender, tokens);
         require(hasError, "Error to transfer tokens to wallet");
 
         emit TokensDOCTBought(msg.sender, tokens);
